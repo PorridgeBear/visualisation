@@ -15,6 +15,13 @@ var sentence = axiom;
 var branchLength = 4;
 var angle = .4363; // 25 degrees in radians
 
+var colours = [
+  { r: 163, g: 176, b: 91 },
+  { r:  98, g: 110, b: 16 },
+  { r:  69, g:  52, b: 32 },
+  { r:  65, g:  80, b:  5 },
+];
+
 /**
  * Create a drawing canvas, create generations of the sentence and render.
  */
@@ -25,7 +32,7 @@ function setup() {
     generate();
   }
 
-  background(0);
+  background(98, 235, 247);
   stroke(255);
 
   render();
@@ -71,6 +78,8 @@ function render() {
     var char = sentence.charAt(i);
     switch (char) {
       case "F":
+        var c = colours[floor(random(0, colours.length - 1))];
+        stroke(c.r, c.g, c.b);
         line(0, 0, 0, -branchLength);
         translate(0, -branchLength);
         break;
