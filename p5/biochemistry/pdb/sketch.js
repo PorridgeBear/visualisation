@@ -2,6 +2,7 @@
  * A simple Protein Data Bank molecule viewer.
  * Only handles ATOM/HETATM records and renders a spacefill visualisation
  * by covalent radii in CPK colouring.
+ * PDB files taken from http://www.nyu.edu/pages/mathmol/library/
  */
 
 /**
@@ -19,18 +20,28 @@ var Atom = function(element, x, y, z) {
  */
 var Molecule = function() {
 
+  /* The list of atoms. */
   this.atoms = [];
 
+  /* The max side length of the bounded set of atoms - used for scaling. */
   this.maxLength = 0;
 
+  /* The center of each axis, used for rotational centering. */
   this.cX = 0;
   this.cY = 0;
   this.cZ = 0;
 
+  /**
+   * Add an Atom.
+   */
   this.add = function(atom) {
     this.atoms.push(atom);
   }
 
+  /**
+   * Called to compute the lengths/centers for this molecule after all
+   * atoms added.
+   */
   this.finalise = function() {
 
     var sumX = 0, sumY = 0, sumZ = 0;
@@ -40,6 +51,7 @@ var Molecule = function() {
       sumX += this.atoms[i].x;
       sumY += this.atoms[i].y;
       sumZ += this.atoms[i].z;
+
       maxX =  this.atoms[i].x > maxX ? this.atoms[i].x : maxX;
       maxY =  this.atoms[i].y > maxY ? this.atoms[i].y : maxY;
       maxZ =  this.atoms[i].z > maxZ ? this.atoms[i].z : maxZ;
@@ -170,7 +182,9 @@ var molecule;
 var pdbText;
 
 /**
- * Create a 3D canvas, a camera and load a PDB file.
+ * Create a 3D canvas and load a PDB file by default. Offer a select of other
+ * molecules. Uses adcworks.com hosted files as an accept-origin header allows
+ * all origins for CORS.
  */
 function setup() {
   createCanvas(480, 480, WEBGL);
