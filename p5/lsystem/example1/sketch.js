@@ -6,11 +6,11 @@
 var axiom = "X";
 
 var rules = [
-  { src: "X", dst: "F−[[X]+X]+F[+FX]−X" },
+  { src: "X", dst: "F-[[X]+X]+F[+FX]-X" },
   { src: "F", dst: "FF" }
 ];
 
-var generations = 6;
+var generations = 5;
 var sentence = axiom;
 var branchLength = 4;
 var angle = .4363; // 25 degrees in radians
@@ -35,6 +35,7 @@ function setup() {
   background(98, 235, 247);
   stroke(255);
 
+  createP(sentence);
   render();
 }
 
@@ -72,7 +73,7 @@ function generate() {
  */
 function render() {
 
-  translate(100, height);
+  translate(width/2, height);
 
   for (var i = 0; i < sentence.length; i++) {
     var char = sentence.charAt(i);
