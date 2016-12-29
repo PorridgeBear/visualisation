@@ -1,6 +1,7 @@
 /*
- * A simple Protein Data Bank molecule viewer. Only handles ATOM records and
- * renders a spacefill visualisation by van-der-waals radius in CPK colouring.
+ * A simple Protein Data Bank molecule viewer.
+ * Only handles ATOM/HETATM records and renders a spacefill visualisation
+ * by covalent radii in CPK colouring.
  */
 
 /**
