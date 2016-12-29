@@ -32,7 +32,7 @@ function setup() {
     generate();
   }
 
-  background(98, 235, 247);
+  background(189, 244, 247);
   stroke(255);
 
   createP(sentence);
