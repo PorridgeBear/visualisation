@@ -91,15 +91,17 @@ function draw() {
 
     scale(width / (molecule.maxLength * scaleSider.value()));
 
-    /*
     for (var i = 0; i < molecule.atoms.length; i++) {
       var atom = molecule.atoms[i];
       push();
       translate(atom.x - molecule.cX, atom.y - molecule.cY, atom.z - molecule.cZ);
-      sphere(0.2);
+      var ref = refElement(atom.element);
+      if (ref) {
+        ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
+        sphere(ref.r / 200);
+      }
       pop();
     }
-    */
 
     for (var i = 0; i < molecule.bonds.length; i++) {
       var src = molecule.bonds[i].src;
@@ -153,7 +155,7 @@ function stick(element, src, dst, distance) {
   if (ref) {
     ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
     //cylinder(0.1, vL);
-    box(0.1, vL); // SO much faster and not that noticeable as matchsticks
+    box(0.3, vL); // SO much faster and not that noticeable as matchsticks
   }
   pop();
 }
