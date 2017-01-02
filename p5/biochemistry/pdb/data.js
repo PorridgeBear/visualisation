@@ -64,4 +64,6 @@ function refElement(element) {
       return ref[i];
     }
   }
+
+  return ref[ref.length - 1];
 }
