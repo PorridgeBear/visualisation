@@ -38,27 +38,25 @@ var ref = [
 ];
 
 /**
- * Find a symbol in the ref data for the incoming name. Iterates over the name
- * by removing from the right side to the left as PDB names can have extra
- * data we don't want for this example.
+ * Find ref data by symbol.
  */
 function symByPDBName(name) {
-  var iterations = name.length;
-  while (iterations > 0) {
-    for (var i = 0; i < ref.length; i++) {
-      if (name === ref[i].sym) {
-        return ref[i].sym;
-      }
+
+  name = name.toUpperCase().replace(/[^A-Z]/g, '');
+  for (var i = 0; i < ref.length; i++) {
+    if (name === ref[i].sym) {
+      return ref[i].sym;
     }
-    name = name.substring(0, name.length - 1);
-    iterations--;
   }
+
+  return 'X';
 }
 
 /**
  * Find reference data by element.
  */
 function refElement(element) {
+
   for (var i = 0; i < ref.length; i++) {
     if (element === ref[i].sym) {
       return ref[i];
