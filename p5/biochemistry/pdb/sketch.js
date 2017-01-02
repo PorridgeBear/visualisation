@@ -1,20 +1,23 @@
-/** The final molecule, set by the loader. */
+/* The final molecule, set by the loader. */
 var molecule;
 
-/** Display mode */
+/* Display mode */
 var mode = "Space Fill";
 
-/** Select **/
+/* Select **/
 var availableMolecules;
 
-/** PDB text element */
+/* PDB text element */
 var pdbText;
 
-/** Scale slider for zooming */
+/* Scale slider for zooming */
 var scaleSider;
 
 /* Y axis vector used for stick mode */
 var y;
+
+/* Bond geometry thickness */
+var bondsThickness = 0.3;
 
 /** A callback for when molecules selected and loaded - configures UI */
 var loadedMoleculeCallback = function(pdb, mol) {
@@ -98,7 +101,9 @@ function draw() {
       var ref = refElement(atom.element);
       if (ref) {
         ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
-        sphere(ref.r / 200);
+        var r = ref.r / 200;
+        if (r < bondsThickness) { r = bondsThickness };
+        sphere(r);
       }
       pop();
     }
@@ -155,7 +160,7 @@ function stick(element, src, dst, distance) {
   if (ref) {
     ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
     //cylinder(0.1, vL);
-    box(0.3, vL); // SO much faster and not that noticeable as matchsticks
+    box(bondsThickness, vL); // SO much faster and not that noticeable as matchsticks
   }
   pop();
 }
