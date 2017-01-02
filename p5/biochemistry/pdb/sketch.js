@@ -120,6 +120,7 @@ function stick(element, src, dst, distance) {
 
   // Create a vector pointing from src to dst and normalize it
   var v = createVector(dst.x - src.x, dst.y - src.y, dst.z - src.z);
+  var v2 = createVector(dst.x - src.x, dst.y - src.y, dst.z - src.z);
   v.normalize();
 
   // Find the angle to rotate
@@ -135,9 +136,9 @@ function stick(element, src, dst, distance) {
 
   // Where to draw the cylinder from
   var origin = createVector(
-    src.x - molecule.cX + (v.x / 4),
-    src.y - molecule.cY + (v.y / 4),
-    src.z - molecule.cZ + (v.z / 4)
+    src.x - molecule.cX + (v2.x / 4),
+    src.y - molecule.cY + (v2.y / 4),
+    src.z - molecule.cZ + (v2.z / 4)
   );
 
   push();
@@ -146,7 +147,7 @@ function stick(element, src, dst, distance) {
   var ref = refElement(element);
   if (ref) {
     ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
-    cylinder(0.1, v.mag() / 2);
+    cylinder(0.1, v2.mag() / 2);
   }
   pop();
 }
