@@ -141,7 +141,7 @@ function stick(element, src, dst, distance) {
   var ref = refElement(element);
   if (ref) {
     ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
-    cylinder(0.1, v.ma);
+    cylinder(0.1, v.mag() / 2);
   }
   pop();
 }
