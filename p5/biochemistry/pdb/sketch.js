@@ -17,7 +17,7 @@ var scaleSider;
 var y;
 
 /* Bond geometry thickness */
-var bondsThickness = 0.3;
+var bondsThickness = 0.2;
 
 /** A callback for when molecules selected and loaded - configures UI */
 var loadedMoleculeCallback = function(pdb, mol) {
