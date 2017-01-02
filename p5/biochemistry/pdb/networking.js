@@ -26,14 +26,17 @@ function loadPDB(name, callback) {
         var line = lines[i];
         var recordName = line.substring(1 - 1, 6).trim();
         if (recordName === "ATOM" || recordName === "HETATM") {
-          var name = line.substring(13 - 1, 15).trim();
-          name = name.replace(/[0-9]/g, '');
-          name = symByPDBName(name);
+          var symbol = line.substring(77 - 1, 78).trim();
+          if (!symbol) {
+            var name = line.substring(13 - 1, 15).trim();
+            name = name.replace(/[0-9]/g, '');
+            symbol = symByPDBName(name);
+          }
           var x = parseFloat(line.substring(31 - 1, 38).trim());
           var y = parseFloat(line.substring(39 - 1, 46).trim());
           var z = parseFloat(line.substring(47 - 1, 54).trim());
-          var ref = refElement(name);
-          mol.add(new Atom(i, name, x, y, z, ref.r));
+          var ref = refElement(symbol);
+          mol.add(new Atom(i, symbol, x, y, z, ref.r));
         }
       }
 
