@@ -8,11 +8,27 @@
 /**
  * An Atom class.
  */
-var Atom = function(element, x, y, z) {
+var Atom = function(id, element, x, y, z, rPicometre) {
+  this.id = id;
   this.element = element;
   this.x = x;
   this.y = y;
   this.z = z;
+  this.rPicometre = rPicometre;
+  this.rAngstroms = this.rPicometre / 100;
+
+  isHydrogen = function() {
+    return this.element && this.element === "H";
+  }
+}
+
+/**
+ * A Bond class.
+ */
+var Bond = function(src, dst, length) {
+  this.src = src;
+  this.dst = dst;
+  this.length = length;
 }
 
 /**
@@ -22,6 +38,9 @@ var Molecule = function() {
 
   /* The list of atoms. */
   this.atoms = [];
+
+  /* The list of bonds between Atoms. */
+  this.bonds = [];
 
   /* The max side length of the bounded set of atoms - used for scaling. */
   this.maxLength = 0;
@@ -39,10 +58,67 @@ var Molecule = function() {
   }
 
   /**
+   * Compute the bonds automatically by distances.
+   */
+  this.createBonds = function() {
+
+    for (var i = 0; i < this.atoms.length - 1; i++) {
+      for (var j = i + 1; j < this.atoms.length; j++) {
+        var src = this.atoms[i];
+        var dst = this.atoms[j];
+
+        if (src.id === dst.id || this.bondExists(src, dst)) {
+          continue;
+        }
+
+        // Distance between atoms.
+        var distance = sqrt(
+          pow(dst.x - src.x, 2) +
+          pow(dst.y - src.y, 2) +
+          pow(dst.z - src.z, 2)
+        );
+
+        // RasMol https://www.umass.edu/microbio/rasmol/rasbonds.htm
+
+        // > 255 atoms in molecule uses quick bonding:
+        // Two atoms are considered bonded when the distance between them
+        // is between 0.4 and 1.9 Angstroms, unless one or both atoms are
+        // hydrogens, in which case the bonded range is between
+        // 0.4 and 1.2 Angstroms.
+        // <= 255 atoms in molecule uses slower bonding:
+        // Two atoms are considered bonded when the distance between them
+        // is between 0.4 Angstroms and the sum of their covalent radii
+        // plus 0.56 Angstroms.
+        var bondMin = 0.4;
+        var bondMax = this.atoms.length > 255 ?
+          (src.isHydrogen || dst.isHydrogen ? 1.2 : 1.9) :
+          ((src.rAngstroms + dst.rAngstroms) + 0.56);
+
+        if (distance >= bondMin && distance <= bondMax) {
+            this.bonds.push(new Bond(src, dst, distance));
+        }
+      }
+    }
+  }
+
+  this.bondExists = function(src, dst) {
+    for (var i = 0; i < this.bonds.length; i++) {
+        var bond = this.bonds[i];
+        if ((bond.src.id === src.id && bond.dst.id === dst.id) ||
+            (bond.dst.id === src.id && bond.src.id === dst.id)) {
+          return true;
+        }
+    }
+    return false;
+  }
+
+  /**
    * Called to compute the lengths/centers for this molecule after all
    * atoms added.
    */
   this.finalise = function() {
+
+    this.createBonds();
 
     var sumX = 0, sumY = 0, sumZ = 0;
     var maxX = 0, maxY = 0, maxZ = 0;
@@ -95,7 +171,8 @@ function loadPDB(url, callback) {
           var x = parseFloat(line.substring(31 - 1, 38).trim());
           var y = parseFloat(line.substring(39 - 1, 46).trim());
           var z = parseFloat(line.substring(47 - 1, 54).trim());
-          mol.add(new Atom(name, x, y, z));
+          var ref = refElement(name);
+          mol.add(new Atom(i, name, x, y, z, ref.r));
         }
       }
 
@@ -178,8 +255,14 @@ function refElement(element) {
 /** The final molecule, set by the loader. */
 var molecule;
 
+/** Display mode */
+var mode = "Space Fill";
+
 /** PDB text element */
 var pdbText;
+
+/* Y axis vector used for stick mode */
+var y;
 
 /**
  * Create a 3D canvas and load a PDB file by default. Offer a select of other
@@ -188,6 +271,17 @@ var pdbText;
  */
 function setup() {
   createCanvas(480, 480, WEBGL);
+
+  y = createVector(0, 1, 0);
+
+  createP("");
+
+  var modes = createSelect();
+  modes.option('Space Fill');
+  modes.option('Bonds');
+  modes.changed(function() {
+    mode = modes.value();
+  });
 
   var molecules = createSelect();
   molecules.option('drug - adrenaline', 'http://adcworks.com/files/adrenaline.pdb.php');
@@ -200,6 +294,7 @@ function setup() {
     loadPDB(url, function(pdb, mol) {
       molecule = mol;
       pdbText.html(pdb);
+      console.log(molecule);
     });
   });
 
@@ -208,6 +303,7 @@ function setup() {
   loadPDB('http://adcworks.com/files/adrenaline.pdb.php', function(pdb, mol) {
     molecule = mol;
     pdbText.html(pdb);
+    console.log(molecule);
   });
 }
 
@@ -221,20 +317,87 @@ function draw() {
 
   orbitControl();
 
+  background(0);
   ambientLight(90);
   directionalLight(200, 200, 200, 0, 0, 20);
 
-  scale(width / (molecule.maxLength * 3));
+  if (mode === "Space Fill") {
 
-  for (var i = 0; i < molecule.atoms.length; i++) {
-    var atom = molecule.atoms[i];
-    push();
-    translate(atom.x - molecule.cX, atom.y - molecule.cY, atom.z - molecule.cZ);
-    var ref = refElement(atom.element);
-    if (ref) {
-      ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
-      sphere(ref.r / 80);
+    scale(width / (molecule.maxLength * 3));
+
+    for (var i = 0; i < molecule.atoms.length; i++) {
+      var atom = molecule.atoms[i];
+      push();
+      translate(atom.x - molecule.cX, atom.y - molecule.cY, atom.z - molecule.cZ);
+      var ref = refElement(atom.element);
+      if (ref) {
+        ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
+        sphere(ref.r / 80);
+      }
+      pop();
     }
-    pop();
+
+  } else if (mode === "Bonds") {
+
+    scale(width / (molecule.maxLength * 3));
+
+    /*
+    for (var i = 0; i < molecule.atoms.length; i++) {
+      var atom = molecule.atoms[i];
+      push();
+      translate(atom.x - molecule.cX, atom.y - molecule.cY, atom.z - molecule.cZ);
+      sphere(0.2);
+      pop();
+    }
+    */
+
+    for (var i = 0; i < molecule.bonds.length; i++) {
+      var src = molecule.bonds[i].src;
+      var dst = molecule.bonds[i].dst;
+      stick(src.element, src, dst);
+      stick(dst.element, dst, src);
+    }
   }
+}
+
+/**
+ * Draw a cylinder between 2 atoms.
+ * Rotational math algorithm from:
+ * http://mufthas.blogspot.de/2010/03/how-to-draw-cylinder-in-java-3d-between.html
+ */
+function stick(element, src, dst) {
+
+  // Create a vector pointing from src to dst and normalize it
+  var v = createVector(dst.x - src.x, dst.y - src.y, dst.z - src.z);
+  v.normalize();
+
+  var len = v.mag() / 2;
+
+  // Find the angle to rotate
+  var theta = acos(p5.Vector.dot(y, v));
+  var vxz = createVector(v.x, 0, y.z);
+  if (p5.Vector.dot(vxz, v) > 0) {
+    theta = -theta;
+  }
+
+  // Find the axis of rotation
+  var c = p5.Vector.cross(y, v);
+  c.normalize();
+
+  // Where to draw the cylinder from
+  var origin = createVector(
+    src.x - molecule.cX + (v.x / 4),
+    src.y - molecule.cY + (v.y / 4),
+    src.z - molecule.cZ + (v.z / 4)
+  );
+
+  push();
+  translate(origin.x, origin.y, origin.z);
+  rotate(theta, c);
+  var ref = refElement(element);
+  if (ref) {
+    ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
+    cylinder(0.1, len);
+  }
+  pop();
 }
