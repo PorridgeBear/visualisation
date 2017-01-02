@@ -120,7 +120,12 @@ function stick(element, src, dst, distance) {
 
   // Create a vector pointing from src to dst and normalize it
   var v = createVector(dst.x - src.x, dst.y - src.y, dst.z - src.z);
-  var v2 = createVector(dst.x - src.x, dst.y - src.y, dst.z - src.z);
+
+  // Compute values pre-normalization for bond drawing
+  var v2 = v.copy();
+  var vL = v.mag() / 2;
+  var v2 = p5.Vector.div(v, 4);
+
   v.normalize();
 
   // Find the angle to rotate
@@ -136,9 +141,9 @@ function stick(element, src, dst, distance) {
 
   // Where to draw the cylinder from
   var origin = createVector(
-    src.x - molecule.cX + (v2.x / 4),
-    src.y - molecule.cY + (v2.y / 4),
-    src.z - molecule.cZ + (v2.z / 4)
+    src.x - molecule.cX + v2.x,
+    src.y - molecule.cY + v2.y,
+    src.z - molecule.cZ + v2.z
   );
 
   push();
@@ -147,7 +152,8 @@ function stick(element, src, dst, distance) {
   var ref = refElement(element);
   if (ref) {
     ambientMaterial(ref.cpk.r, ref.cpk.g, ref.cpk.b);
-    cylinder(0.1, v2.mag() / 2);
+    //cylinder(0.1, vL);
+    box(0.1, vL); // SO much faster and not that noticeable as matchsticks
   }
   pop();
 }
