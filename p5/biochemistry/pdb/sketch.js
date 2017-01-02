@@ -13,6 +13,14 @@ var pdbText;
 /* Y axis vector used for stick mode */
 var y;
 
+/** A callback for when molecules selected and loaded - configures UI */
+var loadedMoleculeCallback = function(pdb, mol) {
+  molecule = mol;
+  pdbText.html(pdb);
+  console.log(molecule);
+};
+
+/** Start by loading molecules from the network */
 jQuery(document).ready(function() {
   loadAvailableMolecules();
 });
@@ -38,12 +46,7 @@ function setup() {
 
   availableMolecules = createSelect();
   availableMolecules.changed(function() {
-    loadPDB(availableMolecules.value(), function(pdb, mol) {
-      console.log('here');
-      molecule = mol;
-      pdbText.html(pdb);
-      console.log(molecule);
-    });
+    loadPDB(availableMolecules.value(), loadedMoleculeCallback);
   });
 
   pdbText = createP("");

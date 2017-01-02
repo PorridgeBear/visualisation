@@ -4,6 +4,9 @@ function loadAvailableMolecules() {
     $.each(data, function(i, name) {
       availableMolecules.option(name);
     });
+
+    // Load the first molecule when list loaded
+    loadPDB(availableMolecules.value(), loadedMoleculeCallback);
   });
 }
 
