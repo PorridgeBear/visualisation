@@ -42,14 +42,19 @@ var ref = [
  */
 function symByPDBName(name) {
 
+  if (!name || name.length === 0) {
+    return 'X';
+  }
+
   name = name.toUpperCase().replace(/[^A-Z]/g, '');
+
   for (var i = 0; i < ref.length; i++) {
     if (name === ref[i].sym) {
       return ref[i].sym;
     }
   }
 
-  return 'X';
+  return symByPDBName(name.substring(0, name.length - 1));
 }
 
 /**
