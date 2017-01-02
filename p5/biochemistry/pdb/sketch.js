@@ -10,6 +10,9 @@ var availableMolecules;
 /** PDB text element */
 var pdbText;
 
+/** Scale slider for zooming */
+var scaleSider;
+
 /* Y axis vector used for stick mode */
 var y;
 
@@ -36,6 +39,8 @@ function setup() {
   y = createVector(0, 1, 0);
 
   createP("");
+
+  scaleSider = createSlider(1, 6, 3, 1);
 
   var modes = createSelect();
   modes.option('Space Fill');
@@ -68,7 +73,7 @@ function draw() {
 
   if (mode === "Space Fill") {
 
-    scale(width / (molecule.maxLength * 3));
+    scale(width / (molecule.maxLength * scaleSider.value()));
 
     for (var i = 0; i < molecule.atoms.length; i++) {
       var atom = molecule.atoms[i];
@@ -84,7 +89,7 @@ function draw() {
 
   } else if (mode === "Bonds") {
 
-    scale(width / (molecule.maxLength * 3));
+    scale(width / (molecule.maxLength * scaleSider.value()));
 
     /*
     for (var i = 0; i < molecule.atoms.length; i++) {
